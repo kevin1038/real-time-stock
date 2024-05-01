@@ -1,6 +1,5 @@
 package com.stock.realtime.rtstock.position;
 
-import com.stock.realtime.rtstock.marketdata.MarketData;
 import com.stock.realtime.rtstock.marketdata.MarketDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +20,7 @@ public class PortfolioService {
 
     private final MarketDataService marketDataService;
     private final List<Position> positions;
+
     private final AtomicInteger counter = new AtomicInteger(0);
     private final Map<String, BigDecimal> marketPriceUpdate = new ConcurrentHashMap<>();
 
@@ -31,12 +31,12 @@ public class PortfolioService {
         this.marketDataService = marketDataService;
     }
 
-    public void pushMarketData(MarketData marketData) {
-        marketPriceUpdate.put(marketData.getTicker(), marketData.getPrice());
+    public void pushMarketData(String ticker, BigDecimal price) {
+        marketPriceUpdate.put(ticker, price);
     }
 
-    @Scheduled(initialDelay = 3, fixedRate = 3, timeUnit = TimeUnit.SECONDS)
-    public void printPortfolio() {
+    @Scheduled(initialDelay = 5, fixedRate = 2, timeUnit = TimeUnit.SECONDS)
+    private void printPortfolio() {
         StringBuilder portfolio = new StringBuilder();
         portfolio.append(String.format("\n## %d Market Data Update\n", counter.incrementAndGet()));
         marketPriceUpdate.forEach((ticker, price) ->

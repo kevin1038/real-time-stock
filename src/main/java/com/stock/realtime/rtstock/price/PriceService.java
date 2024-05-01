@@ -5,6 +5,8 @@ import com.stock.realtime.rtstock.security.Security;
 import com.stock.realtime.rtstock.security.SecurityRepository;
 import com.stock.realtime.rtstock.security.SecurityType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,7 +21,6 @@ import static com.stock.realtime.rtstock.price.PriceUtil.calculateCumulativeProb
 @Service
 public class PriceService {
 
-    private static final long DISCRETE_TIME = 2;
     private static final double RISK_FREE_INTEREST_RATE = 0.02;
 
     private final SecurityRepository securityRepository;
@@ -31,17 +32,20 @@ public class PriceService {
         this.marketDataService = marketDataService;
     }
 
-    public BigDecimal generatePrice(Security security) {
-        return security.getType() == SecurityType.STOCK
-                ? generateStockPrice(security)
-                : generateOptionPrice(security);
+    @EventListener
+    private void init(ContextRefreshedEvent event) {
+        securityRepository.findAllByType(SecurityType.STOCK)
+                .forEach(security -> marketDataService.pushMarketData(security.getTicker(), BigDecimal.valueOf(security.getInitPrice())));
+
+        securityRepository.findAllByTypeNot(SecurityType.STOCK)
+                .forEach(security -> marketDataService.pushMarketData(security.getTicker(), generateOptionPrice(security)));
     }
 
-    public BigDecimal generateStockPrice(Security security) {
+    public BigDecimal generateStockPrice(Security security, long discreteMilliseconds) {
         BigDecimal currentPrice = marketDataService.getMarketPrice(security.getTicker());
 
         Random random = new Random();
-        double t = (double) DISCRETE_TIME;
+        double t = discreteMilliseconds / 1000.0;
         double mu = security.getExpectedReturn();
         double sigma = security.getAnnualizedSD();
         double epsilon = random.nextGaussian();

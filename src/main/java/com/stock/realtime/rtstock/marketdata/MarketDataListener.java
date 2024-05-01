@@ -27,21 +27,22 @@ public class MarketDataListener {
     }
 
     @EventListener
-    public void onApplicationEvent(MarketData marketData) {
-        BigDecimal previousPrice = marketDataService.getMarketPrice(marketData.getTicker());
+    private void onApplicationEvent(MarketData marketData) {
+        String ticker = marketData.getTicker();
+        BigDecimal previousPrice = marketDataService.getMarketPrice(ticker);
         BigDecimal currentPrice = marketData.getPrice();
 
         if (currentPrice.equals(previousPrice)) {
             return;
         }
 
-        securityRepository.findAllByUnderlyingStock(marketData.getTicker())
+        securityRepository.findAllByUnderlyingStock(ticker)
                 .forEach(security -> {
-                    BigDecimal price = priceService.generatePrice(security);
-                    marketDataService.pushMarketData(new MarketData(this, security.getTicker(), price));
+                    BigDecimal price = priceService.generateOptionPrice(security);
+                    marketDataService.pushMarketData(security.getTicker(), price);
                 });
 
-        marketDataService.pushMarketData(marketData);
-        portfolioService.pushMarketData(marketData);
+        marketDataService.pushMarketData(ticker, currentPrice);
+        portfolioService.pushMarketData(ticker, currentPrice);
     }
 }

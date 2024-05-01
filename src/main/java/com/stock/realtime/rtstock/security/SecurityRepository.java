@@ -10,5 +10,7 @@ public interface SecurityRepository extends CrudRepository<Security, String> {
 
     List<Security> findAllByType(SecurityType type);
 
+    List<Security> findAllByTypeNot(SecurityType type);
+
     List<Security> findAllByUnderlyingStock(String underlyingStock);
 }

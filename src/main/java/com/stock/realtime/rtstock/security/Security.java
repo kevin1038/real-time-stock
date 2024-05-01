@@ -29,6 +29,9 @@ public class Security {
     @Column(name = "underlying_stock")
     private String underlyingStock;
 
+    @Column(name = "init_price")
+    private Double initPrice;
+
     public void setTicker(String ticker) {
         this.ticker = ticker;
     }
@@ -83,5 +86,13 @@ public class Security {
 
     public void setUnderlyingStock(String underlyingStock) {
         this.underlyingStock = underlyingStock;
+    }
+
+    public Double getInitPrice() {
+        return initPrice;
+    }
+
+    public void setInitPrice(Double initPrice) {
+        this.initPrice = initPrice;
     }
 }
