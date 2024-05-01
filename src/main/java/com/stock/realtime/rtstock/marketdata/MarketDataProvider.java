@@ -6,10 +6,11 @@ import com.stock.realtime.rtstock.security.SecurityRepository;
 import com.stock.realtime.rtstock.security.SecurityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,8 +35,8 @@ public class MarketDataProvider {
         this.taskScheduler = taskScheduler;
     }
 
-    @PostConstruct
-    private void init() {
+    @EventListener
+    private void init(ContextRefreshedEvent event) {
         scheduleTask();
     }
 
